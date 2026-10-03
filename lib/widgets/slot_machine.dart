@@ -7,6 +7,7 @@ import '../services/wallet_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/cosmic_button.dart';
 import '../widgets/currency_bar.dart';
+import '../widgets/win_celebration.dart';
 
 /// Reusable animated slot machine driven by a [SlotConfig].
 /// Optional flags add per-game mechanics:
@@ -290,7 +291,8 @@ class _SlotMachineState extends State<SlotMachine> {
 
   void _finishSpin() {
     setState(() => _spinning = false);
-    if (_lastWin >= _totalBet * 15) _banner('💥 MEGA WIN  +$_lastWin');
+    final tier = winTierFor(_lastWin, _totalBet);
+    if (tier != WinTier.none) showWinCelebration(context, _lastWin, tier);
   }
 
   void _handleCantAfford() {
@@ -434,8 +436,10 @@ class _SlotMachineState extends State<SlotMachine> {
 
   Widget _cell(int reel, int row) {
     final sym = _display[reel][row];
-    final win = _winCells.contains(reel * c.rows + row);
-    return AnimatedContainer(
+    final win = _winCells.contains(reel * c.rows + row) && !_spinning;
+    return PulseGlow(
+      active: win,
+      child: AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       margin: const EdgeInsets.all(3),
       decoration: BoxDecoration(
@@ -475,6 +479,7 @@ class _SlotMachineState extends State<SlotMachine> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -492,13 +497,26 @@ class _SlotMachineState extends State<SlotMachine> {
                     fontWeight: FontWeight.w900,
                     fontSize: 16)),
           if (showWin)
-            Text(
-                'WIN  +${CurrencyBar.format(_lastWin)}'
-                '${showMult ? '   x$_cascadeMult' : ''}',
-                style: const TextStyle(
-                    color: AppColors.gold,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CountUpText(
+                  key: ValueKey(_lastWin),
+                  amount: _lastWin,
+                  prefix: 'WIN  +',
+                  style: const TextStyle(
+                      color: AppColors.gold,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 20),
+                ),
+                if (showMult)
+                  Text('   x$_cascadeMult',
+                      style: const TextStyle(
+                          color: AppColors.teal,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20)),
+              ],
+            ),
         ],
       ),
     );

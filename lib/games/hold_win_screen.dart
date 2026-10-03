@@ -4,6 +4,7 @@ import '../services/wallet_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/cosmic_button.dart';
 import '../widgets/currency_bar.dart';
+import '../widgets/win_celebration.dart';
 
 /// #3 Galaxy Gold — Hold & Win. Land 6+ coins to start 3 respins; each new
 /// coin re-locks and resets respins. Fill all 15 cells for the Grand jackpot.
@@ -114,6 +115,11 @@ class _HoldWinScreenState extends State<HoldWinScreen> {
       _lastWin = win;
       _status = full ? '🌟 GRAND JACKPOT!' : 'WIN +${CurrencyBar.format(win)}';
     });
+    // Hold & Win always pays something; a full grid is always EPIC.
+    final tier = full ? WinTier.epic : winTierFor(win, _totalBet);
+    if (tier != WinTier.none) {
+      if (mounted) showWinCelebration(context, win, tier);
+    }
   }
 
   void _cantAfford() {
