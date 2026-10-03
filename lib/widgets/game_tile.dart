@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/slot_game.dart';
+import '../services/sound_service.dart';
 import '../theme/app_theme.dart';
 
-class GameTile extends StatelessWidget {
+class GameTile extends StatefulWidget {
   final SlotGame game;
   final bool unlocked;
   final VoidCallback onTap;
@@ -15,31 +16,89 @@ class GameTile extends StatelessWidget {
   });
 
   @override
+  State<GameTile> createState() => _GameTileState();
+}
+
+class _GameTileState extends State<GameTile> {
+  bool _down = false;
+
+  @override
   Widget build(BuildContext context) {
+    final game = widget.game;
+    final unlocked = widget.unlocked;
     final Widget art = Image.asset(game.asset, fit: BoxFit.contain);
+
+    final double translateY = _down ? 3.0 : 0.0;
+    final double extrusionHeight = _down ? 1.5 : 4.5;
+
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) {
+        sound.tap();
+        setState(() => _down = true);
+      },
+      onTapUp: (_) {
+        setState(() => _down = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _down = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0, translateY, 0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.purple.withValues(alpha: 0.35),
-              AppColors.deepPurple.withValues(alpha: 0.75),
+              AppColors.purple.withValues(alpha: 0.45),
+              AppColors.deepPurple.withValues(alpha: 0.85),
+              const Color(0xFF0F0422),
             ],
           ),
-          border: Border.all(color: game.glow.withValues(alpha: 0.7), width: 1.5),
+          border: Border.all(
+            color: game.glow.withValues(alpha: _down ? 0.9 : 0.65),
+            width: 1.5,
+          ),
           boxShadow: [
+            // Solid 3D isometric extrusion base
             BoxShadow(
-                color: game.glow.withValues(alpha: 0.35),
-                blurRadius: 14,
-                spreadRadius: 1),
+              color: const Color(0xFF070114),
+              offset: Offset(0, extrusionHeight),
+              blurRadius: 0,
+            ),
+            // Soft neon aura
+            BoxShadow(
+              color: game.glow.withValues(alpha: _down ? 0.2 : 0.35),
+              blurRadius: 14,
+              spreadRadius: 1,
+              offset: Offset(0, extrusionHeight + 2),
+            ),
           ],
         ),
         child: Stack(
           children: [
+            // Top specular shine line
+            Positioned(
+              top: 1.5,
+              left: 10,
+              right: 10,
+              height: 12,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.35),
+                      Colors.white.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             Column(
               children: [
                 const SizedBox(height: 10),
@@ -57,9 +116,17 @@ class GameTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black,
+                        offset: Offset(0, 1.5),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -90,6 +157,13 @@ class GameTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: isHot ? AppColors.magenta : AppColors.teal,
         borderRadius: BorderRadius.circular(6),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF1E0838),
+            offset: Offset(0, 1.5),
+            blurRadius: 0,
+          ),
+        ],
       ),
       child: Text(text,
           style: const TextStyle(
@@ -109,7 +183,7 @@ class GameTile extends StatelessWidget {
           children: [
             const Icon(Icons.lock, color: AppColors.gold, size: 32),
             const SizedBox(height: 4),
-            Text('Unlock at Lv ${game.unlockLevel}',
+            Text('Unlock at Lv ${widget.game.unlockLevel}',
                 style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,

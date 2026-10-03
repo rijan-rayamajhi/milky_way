@@ -55,14 +55,14 @@ class _GameBottomNavBarState extends State<GameBottomNavBar>
 
     final tabs = [
       _TabDef(
-        icon: Icons.casino_rounded,
+        icon: Icons.home_rounded,
         label: 'LOBBY',
         altIcon: Icons.home_rounded,
       ),
       _TabDef(
         icon: Icons.storefront_rounded,
         label: 'STORE',
-        altIcon: Icons.shopping_bag_rounded,
+        altIcon: Icons.storefront_rounded,
       ),
       _TabDef(
         icon: Icons.mark_email_unread_rounded,
@@ -73,11 +73,11 @@ class _GameBottomNavBarState extends State<GameBottomNavBar>
       _TabDef(
         icon: Icons.stars_rounded,
         label: 'DAILY',
-        altIcon: Icons.calendar_today_rounded,
+        altIcon: Icons.calendar_month_rounded,
         hasDot: widget.canClaimDaily,
       ),
       _TabDef(
-        icon: Icons.shield_rounded,
+        icon: Icons.person_rounded,
         label: 'PROFILE',
         altIcon: Icons.person_rounded,
       ),

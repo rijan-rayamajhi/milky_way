@@ -3,8 +3,9 @@ import '../engine/slot_symbol.dart';
 
 const _roy = 'assets/images/symbols/royals';
 
-/// A themed high symbol: (id, glyph, color).
-typedef High = (String, String, Color);
+/// A themed high symbol: (id, glyph, color, assetPath?). Pass null for the
+/// asset to fall back to the emoji glyph until art is ready.
+typedef High = (String, String, Color, String?);
 
 /// Builds a standard 12-symbol set: 5 themed highs + A/K/Q/J/10 lows +
 /// a wild and a scatter. Keeps pays/weights consistent across games so the
@@ -15,6 +16,8 @@ List<SlotSymbol> buildSymbols({
   required Color wildColor,
   required String scatterGlyph,
   required Color scatterColor,
+  String? wildAsset,
+  String? scatterAsset,
 }) {
   assert(highs.length == 5);
   const highPays = <Map<int, int>>[
@@ -32,6 +35,7 @@ List<SlotSymbol> buildSymbols({
         id: highs[i].$1,
         glyph: highs[i].$2,
         color: highs[i].$3,
+        asset: highs[i].$4,
         weight: highWeights[i],
         pays: highPays[i],
       ),
@@ -48,6 +52,7 @@ List<SlotSymbol> buildSymbols({
     SlotSymbol(
         id: 'wild',
         glyph: wildGlyph,
+        asset: wildAsset,
         color: wildColor,
         weight: 3,
         isWild: true,
@@ -55,6 +60,7 @@ List<SlotSymbol> buildSymbols({
     SlotSymbol(
         id: 'scatter',
         glyph: scatterGlyph,
+        asset: scatterAsset,
         color: scatterColor,
         weight: 3,
         isScatter: true),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/sound_service.dart';
 import '../services/wallet_service.dart';
 import '../theme/app_theme.dart';
 
@@ -93,17 +94,7 @@ class CurrencyBar extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       fontSize: 14)),
             ),
-            if (onAdd != null)
-              GestureDetector(
-                onTap: onAdd,
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: const BoxDecoration(
-                      gradient: AppColors.goldGradient, shape: BoxShape.circle),
-                  child: const Icon(Icons.add, color: AppColors.navy, size: 20),
-                ),
-              ),
+            if (onAdd != null) _TactileAddButton(onTap: onAdd),
           ],
         ),
       ),
@@ -124,5 +115,70 @@ class CurrencyBar extends StatelessWidget {
       b.write(s[i]);
     }
     return b.toString();
+  }
+}
+
+class _TactileAddButton extends StatefulWidget {
+  final VoidCallback onTap;
+  const _TactileAddButton({required this.onTap});
+
+  @override
+  State<_TactileAddButton> createState() => _TactileAddButtonState();
+}
+
+class _TactileAddButtonState extends State<_TactileAddButton> {
+  bool _down = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) {
+        sound.tap();
+        setState(() => _down = true);
+      },
+      onTapUp: (_) {
+        setState(() => _down = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _down = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0, _down ? 2.0 : 0.0, 0),
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFF9C4),
+              Color(0xFFFFD54F),
+              Color(0xFFFFB300),
+              Color(0xFFE65100),
+            ],
+            stops: [0.0, 0.35, 0.75, 1.0],
+          ),
+          border: Border.all(color: const Color(0xFFFFF099), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6B2800),
+              offset: Offset(0, _down ? 0.8 : 2.5),
+              blurRadius: 0,
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.4),
+              offset: Offset(0, _down ? 1.5 : 3.5),
+              blurRadius: 3,
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Icon(Icons.add, color: Color(0xFF140728), size: 18),
+        ),
+      ),
+    );
   }
 }
