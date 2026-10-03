@@ -67,6 +67,10 @@ flutter:
     - assets/images/engagement/
     - assets/images/branding/
     - assets/images/avatar/
+    - assets/images/symbols/royals/
+    - assets/images/symbols/cosmic_fortune/
+    - assets/images/symbols/starburst_nova/
+    - assets/images/symbols/lucky_nebula/
     - assets/sounds/
 
   # To add assets to your application, add an assets section, like this:
