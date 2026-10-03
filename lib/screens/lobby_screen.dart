@@ -1,18 +1,23 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/slot_game.dart';
+import '../services/engagement_service.dart';
 import '../services/wallet_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/cosmic_button.dart';
 import '../widgets/currency_bar.dart';
+import '../widgets/daily_dialog.dart';
 import '../widgets/game_tile.dart';
 import '../widgets/slot_machine.dart';
 import '../games/cosmic_fortune_config.dart';
 import 'game_screen.dart';
+import 'mailbox_screen.dart';
 
 class LobbyScreen extends StatefulWidget {
   final WalletService wallet;
-  const LobbyScreen({super.key, required this.wallet});
+  final EngagementService engagement;
+  const LobbyScreen(
+      {super.key, required this.wallet, required this.engagement});
 
   @override
   State<LobbyScreen> createState() => _LobbyScreenState();
@@ -22,6 +27,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
   int _navIndex = 0;
   int _featured = 0;
   Timer? _rotator;
+  Timer? _ticker; // refreshes the hourly countdown
+
+  EngagementService get eng => widget.engagement;
 
   @override
   void initState() {
@@ -30,12 +38,17 @@ class _LobbyScreenState extends State<LobbyScreen> {
     _rotator = Timer.periodic(const Duration(seconds: 4), (_) {
       if (mounted) setState(() => _featured = (_featured + 1) % kGames.length);
     });
+    // Tick once a second so the hourly timer counts down live.
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeRescue());
   }
 
   @override
   void dispose() {
     _rotator?.cancel();
+    _ticker?.cancel();
     super.dispose();
   }
 
@@ -57,7 +70,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
     );
   }
 
-  void _openGame(SlotGame g) {
+  Future<void> _openGame(SlotGame g) async {
     if (!g.unlockedAt(widget.wallet.level)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Reach Level ${g.unlockLevel} to unlock ${g.name}')),
@@ -72,25 +85,28 @@ class _LobbyScreenState extends State<LobbyScreen> {
       default:
         screen = GameScreen(game: g); // other games land in later phases
     }
-    Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+    // Playing may have leveled the player up → mint any level-reward gifts.
+    eng.syncLevelRewards(widget.wallet);
   }
 
-  void _dailyWheel() {
-    // Demo grant; the real daily/variable wheel is Phase 3 (EngagementService).
-    showDialog(
-      context: context,
-      builder: (_) => _rewardDialog(
-        title: 'Daily Bonus',
-        asset: 'assets/images/engagement/daily_wheel.png',
-        message: 'Spin once a day for free coins and gems!',
-        cta: 'Collect 2,000',
-        onCollect: () {
-          widget.wallet.addCoins(2000);
-          widget.wallet.addGems(1);
-          Navigator.pop(context);
-        },
+  void _openDaily() => showDailyBonus(context, eng, widget.wallet);
+
+  void _openMailbox() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MailboxScreen(eng: eng, wallet: widget.wallet),
       ),
     );
+  }
+
+  void _claimHourly() {
+    if (eng.claimHourly(widget.wallet)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('🪙 +1,000 free coins!')),
+      );
+    }
   }
 
   void _getCoins() {
@@ -209,21 +225,52 @@ class _LobbyScreenState extends State<LobbyScreen> {
   }
 
   Widget _dailyButton() {
-    return Row(
-      children: [
-        Image.asset('assets/images/engagement/daily_wheel.png', width: 56),
-        const SizedBox(width: 12),
-        Expanded(
-          child: CosmicButton(
-            label: 'DAILY BONUS',
-            icon: Icons.card_giftcard,
-            gradient: const LinearGradient(
-                colors: [AppColors.magenta, AppColors.purple]),
-            onTap: _dailyWheel,
+    return ListenableBuilder(
+      listenable: eng,
+      builder: (context, _) => Row(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Image.asset('assets/images/engagement/daily_wheel.png', width: 56),
+              if (eng.canClaimDaily)
+                const Positioned(right: -2, top: -2, child: _ReadyDot()),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 3,
+            child: CosmicButton(
+              label: 'DAILY BONUS',
+              icon: Icons.card_giftcard,
+              gradient: const LinearGradient(
+                  colors: [AppColors.magenta, AppColors.purple]),
+              onTap: _openDaily,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 2,
+            child: CosmicButton(
+              label: eng.canClaimHourly
+                  ? 'FREE'
+                  : _fmtDuration(eng.hourlyRemaining),
+              icon: eng.canClaimHourly ? Icons.add_circle : Icons.timer,
+              height: 54,
+              gradient: const LinearGradient(
+                  colors: [AppColors.teal, AppColors.purple]),
+              onTap: eng.canClaimHourly ? _claimHourly : null,
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  static String _fmtDuration(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
   }
 
   Widget _gameGrid() {
@@ -279,16 +326,24 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
   Widget _navItem(IconData icon, String label, int i) {
     final active = _navIndex == i;
+    // Badge: mailbox unread count, or a dot when the daily is claimable.
+    final int badge = i == 2 ? eng.unreadCount : 0;
+    final bool dot = i == 3 && eng.canClaimDaily;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
         setState(() => _navIndex = i);
-        if (i == 3) {
-          _dailyWheel();
-        } else if (i != 0) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$label — coming soon')),
-          );
+        switch (i) {
+          case 2:
+            _openMailbox();
+          case 3:
+            _openDaily();
+          case 0:
+            break;
+          default:
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('$label — coming soon')),
+            );
         }
       },
       child: Padding(
@@ -296,7 +351,31 @@ class _LobbyScreenState extends State<LobbyScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: active ? AppColors.gold : AppColors.textDim, size: 26),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(icon,
+                    color: active ? AppColors.gold : AppColors.textDim, size: 26),
+                if (badge > 0)
+                  Positioned(
+                    right: -8,
+                    top: -6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      decoration: const BoxDecoration(
+                          color: AppColors.magenta, shape: BoxShape.rectangle),
+                      constraints: const BoxConstraints(minWidth: 16),
+                      child: Text('$badge',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800)),
+                    ),
+                  ),
+                if (dot) const Positioned(right: -4, top: -4, child: _ReadyDot()),
+              ],
+            ),
             const SizedBox(height: 2),
             Text(label,
                 style: TextStyle(
@@ -345,4 +424,22 @@ class _LobbyScreenState extends State<LobbyScreen> {
       ),
     );
   }
+}
+
+/// Small pulsing "ready to claim" indicator.
+class _ReadyDot extends StatelessWidget {
+  const _ReadyDot();
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 14,
+        height: 14,
+        decoration: BoxDecoration(
+          color: AppColors.magenta,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: [
+            BoxShadow(color: AppColors.magenta.withValues(alpha: 0.8), blurRadius: 6),
+          ],
+        ),
+      );
 }
