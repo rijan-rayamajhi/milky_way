@@ -13,6 +13,7 @@ import '../widgets/slot_machine.dart';
 import '../games/cosmic_fortune_config.dart';
 import '../games/ways_configs.dart';
 import '../games/hold_win_screen.dart';
+import '../widgets/game_bottom_nav_bar.dart';
 import 'mailbox_screen.dart';
 
 class LobbyScreen extends StatefulWidget {
@@ -106,19 +107,23 @@ class _LobbyScreenState extends State<LobbyScreen> {
     eng.syncLevelRewards(widget.wallet);
   }
 
-  void _openDaily() => showDailyBonus(context, eng, widget.wallet);
+  Future<void> _openDaily() async {
+    await showDailyBonus(context, eng, widget.wallet);
+    if (mounted) setState(() => _navIndex = 0);
+  }
 
-  void _openMailbox() {
-    Navigator.push(
+  Future<void> _openMailbox() async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => MailboxScreen(eng: eng, wallet: widget.wallet),
       ),
     );
+    if (mounted) setState(() => _navIndex = 0);
   }
 
-  void _openSettings() {
-    showDialog(
+  Future<void> _openSettings() async {
+    await showDialog(
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: AppColors.deepPurple,
@@ -183,12 +188,14 @@ class _LobbyScreenState extends State<LobbyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: Stack(
         fit: StackFit.expand,
         children: [
           Image.asset('assets/images/lobby/lobby_background.png', fit: BoxFit.cover),
           Container(color: AppColors.navy.withValues(alpha: 0.25)),
           SafeArea(
+            bottom: false,
             child: Column(
               children: [
                 Padding(
@@ -197,7 +204,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 ),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
                     children: [
                       Center(
                         child: Image.asset('assets/images/branding/logo.png',
@@ -354,93 +361,33 @@ class _LobbyScreenState extends State<LobbyScreen> {
   }
 
   Widget _bottomNav() {
-    const items = [
-      (Icons.home_rounded, 'Lobby'),
-      (Icons.storefront_rounded, 'Store'),
-      (Icons.mail_rounded, 'Mailbox'),
-      (Icons.calendar_today_rounded, 'Daily'),
-      (Icons.person_rounded, 'Profile'),
-    ];
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.deepPurple,
-        border: Border(top: BorderSide(color: AppColors.gold.withValues(alpha: 0.4))),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            for (int i = 0; i < items.length; i++)
-              _navItem(items[i].$1, items[i].$2, i),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, String label, int i) {
-    final active = _navIndex == i;
-    // Badge: mailbox unread count, or a dot when the daily is claimable.
-    final int badge = i == 2 ? eng.unreadCount : 0;
-    final bool dot = i == 3 && eng.canClaimDaily;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        setState(() => _navIndex = i);
-        switch (i) {
-          case 2:
-            _openMailbox();
-          case 3:
-            _openDaily();
-          case 4:
-            _openSettings();
-          case 0:
-            break;
-          default:
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('$label — coming soon')),
-            );
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(icon,
-                    color: active ? AppColors.gold : AppColors.textDim, size: 26),
-                if (badge > 0)
-                  Positioned(
-                    right: -8,
-                    top: -6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                      decoration: const BoxDecoration(
-                          color: AppColors.magenta, shape: BoxShape.rectangle),
-                      constraints: const BoxConstraints(minWidth: 16),
-                      child: Text('$badge',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800)),
-                    ),
-                  ),
-                if (dot) const Positioned(right: -4, top: -4, child: _ReadyDot()),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Text(label,
-                style: TextStyle(
-                    color: active ? AppColors.gold : AppColors.textDim,
-                    fontSize: 10,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w400)),
-          ],
-        ),
+    return ListenableBuilder(
+      listenable: eng,
+      builder: (context, _) => GameBottomNavBar(
+        selectedIndex: _navIndex,
+        unreadMailCount: eng.unreadCount,
+        canClaimDaily: eng.canClaimDaily,
+        onTabSelected: (i) async {
+          setState(() => _navIndex = i);
+          switch (i) {
+            case 0:
+              break;
+            case 1:
+              _getCoins();
+              if (mounted) setState(() => _navIndex = 0);
+              break;
+            case 2:
+              await _openMailbox();
+              break;
+            case 3:
+              await _openDaily();
+              break;
+            case 4:
+              await _openSettings();
+              if (mounted) setState(() => _navIndex = 0);
+              break;
+          }
+        },
       ),
     );
   }

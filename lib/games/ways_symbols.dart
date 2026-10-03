@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../engine/slot_symbol.dart';
 
+const _roy = 'assets/images/symbols/royals';
+
 /// A themed high symbol: (id, glyph, color).
 typedef High = (String, String, Color);
 
@@ -34,15 +36,15 @@ List<SlotSymbol> buildSymbols({
         pays: highPays[i],
       ),
     SlotSymbol(
-        id: 'A', glyph: 'A', color: const Color(0xFFFF7BD5), weight: 14, pays: {3: 2, 4: 5, 5: 15}),
+        id: 'A', glyph: 'A', asset: '$_roy/a.png', color: const Color(0xFFFF7BD5), weight: 14, pays: {3: 2, 4: 5, 5: 15}),
     SlotSymbol(
-        id: 'K', glyph: 'K', color: const Color(0xFF7BC4FF), weight: 16, pays: {3: 2, 4: 5, 5: 12}),
+        id: 'K', glyph: 'K', asset: '$_roy/k.png', color: const Color(0xFF7BC4FF), weight: 16, pays: {3: 2, 4: 5, 5: 12}),
     SlotSymbol(
-        id: 'Q', glyph: 'Q', color: const Color(0xFF8CF0C0), weight: 16, pays: {3: 1, 4: 4, 5: 10}),
+        id: 'Q', glyph: 'Q', asset: '$_roy/q.png', color: const Color(0xFF8CF0C0), weight: 16, pays: {3: 1, 4: 4, 5: 10}),
     SlotSymbol(
-        id: 'J', glyph: 'J', color: const Color(0xFFC9B8FF), weight: 20, pays: {3: 1, 4: 3, 5: 8}),
+        id: 'J', glyph: 'J', asset: '$_roy/j.png', color: const Color(0xFFC9B8FF), weight: 20, pays: {3: 1, 4: 3, 5: 8}),
     SlotSymbol(
-        id: '10', glyph: '10', color: const Color(0xFFBFC6E0), weight: 20, pays: {3: 1, 4: 3, 5: 8}),
+        id: '10', glyph: '10', asset: '$_roy/ten.png', color: const Color(0xFFBFC6E0), weight: 20, pays: {3: 1, 4: 3, 5: 8}),
     SlotSymbol(
         id: 'wild',
         glyph: wildGlyph,

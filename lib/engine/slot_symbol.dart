@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 /// as a multiple of the per-line bet.
 class SlotSymbol {
   final String id;
-  final String glyph; // emoji / short text, swappable for art later
+  final String glyph; // emoji / short text fallback when [asset] is null
+  final String? asset; // image path; preferred over glyph when set
   final Color color;
   final int weight; // relative frequency on the reels
   final bool isWild;
@@ -16,6 +17,7 @@ class SlotSymbol {
     required this.glyph,
     required this.color,
     required this.weight,
+    this.asset,
     this.isWild = false,
     this.isScatter = false,
     this.pays = const {},

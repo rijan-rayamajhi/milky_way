@@ -469,24 +469,31 @@ class _SlotMachineState extends State<SlotMachine> {
             ? [BoxShadow(color: AppColors.gold.withValues(alpha: 0.6), blurRadius: 10)]
             : null,
       ),
-      child: Center(
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Text(
-              sym.glyph,
-              style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.w900,
-                color: sym.pays.isEmpty || sym.glyph.length > 1
-                    ? Colors.white
-                    : sym.color,
-                shadows: const [Shadow(color: Colors.black54, blurRadius: 4)],
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: sym.asset != null
+            ? Image.asset(sym.asset!, fit: BoxFit.contain)
+            : Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Text(
+                      sym.glyph,
+                      style: TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w900,
+                        color: sym.pays.isEmpty || sym.glyph.length > 1
+                            ? Colors.white
+                            : sym.color,
+                        shadows: const [
+                          Shadow(color: Colors.black54, blurRadius: 4)
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
       ),
     ),
     );
