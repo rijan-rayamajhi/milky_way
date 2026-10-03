@@ -4,33 +4,40 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:slots/engine/slot_engine.dart';
 import 'package:slots/engine/slot_symbol.dart';
 
+SlotSymbol _sym(String id, int w, {Map<int, int> pays = const {}}) =>
+    SlotSymbol(id: id, glyph: id, color: Colors.red, weight: w, pays: pays);
+
 void main() {
-  test('5-of-a-kind on the line pays count * betPerLine', () {
-    // Only the paying symbol has weight, so every cell is that symbol.
-    const cfg = SlotConfig(
+  test('lines mode: 5-of-a-kind pays count * betPerLine', () {
+    final cfg = SlotConfig(
       symbols: [
-        SlotSymbol(
-            id: 'x',
-            glyph: 'X',
-            color: Colors.red,
-            weight: 1,
-            pays: {3: 2, 4: 5, 5: 10}),
-        SlotSymbol(id: 'wild', glyph: 'W', color: Colors.pink, weight: 0, isWild: true),
-        SlotSymbol(
-            id: 'scatter', glyph: 'S', color: Colors.teal, weight: 0, isScatter: true),
+        _sym('x', 1, pays: {3: 2, 4: 5, 5: 10}),
+        SlotSymbol(id: 'w', glyph: 'W', color: Colors.pink, weight: 0, isWild: true),
+        SlotSymbol(id: 's', glyph: 'S', color: Colors.teal, weight: 0, isScatter: true),
       ],
-      paylines: [
+      paylines: const [
         [1, 1, 1, 1, 1],
       ],
-      scatterPays: {},
+      scatterPays: const {},
     );
-    final engine = SlotEngine(cfg, rng: Random(7));
-    final o = engine.spin(2);
+    final o = SlotEngine(cfg, rng: Random(7)).spin(2);
+    expect(o.eval.wins.single.count, 5);
+    expect(o.totalWin, 10 * 2);
+  });
 
-    expect(o.grid.length, 5);
-    expect(o.grid[0].length, 3);
-    expect(o.lineWins.single.count, 5);
-    expect(o.totalWin, 10 * 2); // pays[5] * betPerLine
-    expect(o.scatterCount, 0);
+  test('ways mode: full grid of one symbol = rows^reels ways', () {
+    final cfg = SlotConfig(
+      mode: WinMode.ways,
+      symbols: [
+        _sym('x', 1, pays: {3: 1, 4: 2, 5: 5}),
+        SlotSymbol(id: 'w', glyph: 'W', color: Colors.pink, weight: 0, isWild: true),
+        SlotSymbol(id: 's', glyph: 'S', color: Colors.teal, weight: 0, isScatter: true),
+      ],
+      scatterPays: const {},
+    );
+    // Every cell is 'x' → ways = 3^5 = 243, pay[5]=5, bet=2.
+    final o = SlotEngine(cfg, rng: Random(1)).spin(2);
+    expect(o.eval.wins.single.count, 5);
+    expect(o.totalWin, 5 * 2 * 243);
   });
 }

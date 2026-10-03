@@ -10,7 +10,8 @@ import '../widgets/daily_dialog.dart';
 import '../widgets/game_tile.dart';
 import '../widgets/slot_machine.dart';
 import '../games/cosmic_fortune_config.dart';
-import 'game_screen.dart';
+import '../games/ways_configs.dart';
+import '../games/hold_win_screen.dart';
 import 'mailbox_screen.dart';
 
 class LobbyScreen extends StatefulWidget {
@@ -77,14 +78,28 @@ class _LobbyScreenState extends State<LobbyScreen> {
       );
       return;
     }
-    final Widget screen;
-    switch (g.id) {
-      case 'cosmic_fortune':
-        screen = SlotMachine(
-            title: g.name, config: cosmicFortuneConfig, wallet: widget.wallet);
-      default:
-        screen = GameScreen(game: g); // other games land in later phases
-    }
+    final w = widget.wallet;
+    final Widget screen = switch (g.id) {
+      'cosmic_fortune' =>
+        SlotMachine(title: g.name, config: cosmicFortuneConfig, wallet: w),
+      'galaxy_gold' => HoldWinScreen(title: g.name, wallet: w),
+      'starburst_nova' => SlotMachine(
+          title: g.name,
+          config: starburstNovaConfig,
+          wallet: w,
+          expandingWild: true),
+      'lucky_nebula' => SlotMachine(
+          title: g.name,
+          config: luckyNebulaConfig,
+          wallet: w,
+          cascades: true),
+      'asteroid_blitz' => SlotMachine(
+          title: g.name,
+          config: asteroidBlitzConfig,
+          wallet: w,
+          stickyWildSpins: 3),
+      _ => SlotMachine(title: g.name, config: cosmicFortuneConfig, wallet: w),
+    };
     await Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
     // Playing may have leveled the player up → mint any level-reward gifts.
     eng.syncLevelRewards(widget.wallet);
