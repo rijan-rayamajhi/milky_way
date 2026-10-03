@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/lobby_screen.dart';
 import 'services/engagement_service.dart';
+import 'services/sound_service.dart';
 import 'services/wallet_service.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await sound.load();
   final wallet = WalletService();
   await wallet.load();
   final engagement = EngagementService();

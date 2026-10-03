@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../services/sound_service.dart';
 import '../services/wallet_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/cosmic_button.dart';
@@ -61,6 +62,7 @@ class _HoldWinScreenState extends State<HoldWinScreen> {
       return;
     }
     widget.wallet.addXp(5);
+    sound.spinStart();
     setState(() {
       _busy = true;
       _lastWin = 0;
@@ -73,6 +75,8 @@ class _HoldWinScreenState extends State<HoldWinScreen> {
     // Initial drop: ~18% chance of a coin per cell.
     final fresh = List<_Coin?>.generate(
         cells, (_) => _rng.nextInt(100) < 18 ? _makeCoin() : null);
+    sound.spinStop();
+    sound.reelStop();
     setState(() => _grid = fresh);
     final coinCount = fresh.where((c) => c != null).length;
     await Future.delayed(const Duration(milliseconds: 400));
@@ -102,7 +106,10 @@ class _HoldWinScreenState extends State<HoldWinScreen> {
           landed = true;
         }
       }
-      if (landed) _respins = 3; // reset on any new coin
+      if (landed) {
+        _respins = 3; // reset on any new coin
+        sound.reelStop();
+      }
       setState(() {});
     }
 
@@ -118,7 +125,10 @@ class _HoldWinScreenState extends State<HoldWinScreen> {
     // Hold & Win always pays something; a full grid is always EPIC.
     final tier = full ? WinTier.epic : winTierFor(win, _totalBet);
     if (tier != WinTier.none) {
+      sound.bigWin();
       if (mounted) showWinCelebration(context, win, tier);
+    } else if (win > 0) {
+      sound.win();
     }
   }
 

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../engine/slot_engine.dart';
 import '../engine/slot_symbol.dart';
+import '../services/sound_service.dart';
 import '../services/wallet_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/cosmic_button.dart';
@@ -93,6 +94,7 @@ class _SlotMachineState extends State<SlotMachine> {
     final grid = _engine.randomGrid();
     if (widget.stickyWildSpins > 0) _applySticky(grid);
 
+    sound.spinStart();
     setState(() {
       _spinning = true;
       _lastWin = 0;
@@ -118,6 +120,7 @@ class _SlotMachineState extends State<SlotMachine> {
           _display[r] = grid[r];
           _reelSpinning[r] = false;
         });
+        sound.reelStop();
         if (r == c.reels - 1) _afterStop(grid);
       });
     }
@@ -125,6 +128,7 @@ class _SlotMachineState extends State<SlotMachine> {
 
   Future<void> _afterStop(List<List<SlotSymbol>> grid) async {
     _shuffle?.cancel();
+    sound.spinStop();
     if (widget.cascades) {
       await _runCascades();
     } else if (widget.expandingWild) {
@@ -292,7 +296,12 @@ class _SlotMachineState extends State<SlotMachine> {
   void _finishSpin() {
     setState(() => _spinning = false);
     final tier = winTierFor(_lastWin, _totalBet);
-    if (tier != WinTier.none) showWinCelebration(context, _lastWin, tier);
+    if (tier != WinTier.none) {
+      sound.bigWin();
+      showWinCelebration(context, _lastWin, tier);
+    } else if (_lastWin > 0) {
+      sound.win();
+    }
   }
 
   void _handleCantAfford() {

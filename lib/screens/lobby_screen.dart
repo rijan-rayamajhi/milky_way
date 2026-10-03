@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/slot_game.dart';
 import '../services/engagement_service.dart';
+import '../services/sound_service.dart';
 import '../services/wallet_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/cosmic_button.dart';
@@ -112,6 +113,45 @@ class _LobbyScreenState extends State<LobbyScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => MailboxScreen(eng: eng, wallet: widget.wallet),
+      ),
+    );
+  }
+
+  void _openSettings() {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.deepPurple,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: AppColors.gold.withValues(alpha: 0.6)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Settings',
+                  style: TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800)),
+              const SizedBox(height: 8),
+              ListenableBuilder(
+                listenable: sound,
+                builder: (context, _) => SwitchListTile(
+                  title: const Text('Sound & Haptics',
+                      style: TextStyle(color: Colors.white)),
+                  activeThumbColor: AppColors.gold,
+                  value: sound.enabled,
+                  onChanged: (v) => sound.setEnabled(v),
+                ),
+              ),
+              Text('Level ${widget.wallet.level}',
+                  style: const TextStyle(color: AppColors.textDim)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -353,6 +393,8 @@ class _LobbyScreenState extends State<LobbyScreen> {
             _openMailbox();
           case 3:
             _openDaily();
+          case 4:
+            _openSettings();
           case 0:
             break;
           default:

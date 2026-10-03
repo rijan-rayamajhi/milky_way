@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/sound_service.dart';
 import '../theme/app_theme.dart';
 
 /// Code-generated glossy gradient button (no image asset needed).
@@ -34,7 +35,12 @@ class _CosmicButtonState extends State<CosmicButton> {
       onTapDown: enabled ? (_) => setState(() => _down = true) : null,
       onTapUp: enabled ? (_) => setState(() => _down = false) : null,
       onTapCancel: enabled ? () => setState(() => _down = false) : null,
-      onTap: widget.onTap,
+      onTap: enabled
+          ? () {
+              sound.tap();
+              widget.onTap!();
+            }
+          : null,
       child: AnimatedScale(
         scale: _down ? 0.96 : 1,
         duration: const Duration(milliseconds: 90),
