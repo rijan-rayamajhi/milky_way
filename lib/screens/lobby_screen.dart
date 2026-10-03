@@ -6,6 +6,8 @@ import '../theme/app_theme.dart';
 import '../widgets/cosmic_button.dart';
 import '../widgets/currency_bar.dart';
 import '../widgets/game_tile.dart';
+import '../widgets/slot_machine.dart';
+import '../games/cosmic_fortune_config.dart';
 import 'game_screen.dart';
 
 class LobbyScreen extends StatefulWidget {
@@ -62,7 +64,15 @@ class _LobbyScreenState extends State<LobbyScreen> {
       );
       return;
     }
-    Navigator.push(context, MaterialPageRoute(builder: (_) => GameScreen(game: g)));
+    final Widget screen;
+    switch (g.id) {
+      case 'cosmic_fortune':
+        screen = SlotMachine(
+            title: g.name, config: cosmicFortuneConfig, wallet: widget.wallet);
+      default:
+        screen = GameScreen(game: g); // other games land in later phases
+    }
+    Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
 
   void _dailyWheel() {

@@ -110,7 +110,10 @@ class CurrencyBar extends StatelessWidget {
     );
   }
 
-  static String _fmt(int n) {
+  static String _fmt(int n) => format(n);
+
+  /// Public number formatter reused across slot screens.
+  static String format(int n) {
     if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
     if (n >= 10000) return '${(n / 1000).toStringAsFixed(1)}K';
     // group thousands
