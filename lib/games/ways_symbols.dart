@@ -3,8 +3,7 @@ import '../engine/slot_symbol.dart';
 
 const _roy = 'assets/images/symbols/royals';
 
-/// A themed high symbol: (id, glyph, color, assetPath?). Pass null for the
-/// asset to fall back to the emoji glyph until art is ready.
+/// A themed high symbol: (id, glyph, color, assetPath?).
 typedef High = (String, String, Color, String?);
 
 /// Builds a standard 12-symbol set: 5 themed highs + A/K/Q/J/10 lows +
