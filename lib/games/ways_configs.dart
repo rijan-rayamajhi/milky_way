@@ -5,6 +5,7 @@ import 'ways_symbols.dart';
 
 const _nova = 'assets/images/symbols/starburst_nova';
 const _neb = 'assets/images/symbols/lucky_nebula';
+const _ab = 'assets/images/symbols/asteroid_blitz';
 
 /// #4 Starburst Nova — 243 ways, pays both ways, expanding wilds + respin.
 final starburstNovaConfig = SlotConfig(
@@ -48,20 +49,21 @@ final luckyNebulaConfig = SlotConfig(
 );
 
 /// #6 Asteroid Blitz — 243 ways, sticky multiplier wilds + free spins.
-/// (Symbol art pending — emoji glyphs for now.)
 final asteroidBlitzConfig = SlotConfig(
   mode: WinMode.ways,
   symbols: buildSymbols(
     highs: const [
-      ('ab_planet', '🪐', Color(0xFFFFB13D), null),
-      ('ab_moon', '🌕', Color(0xFFBFC6E0), null),
-      ('ab_mars', '🔴', Color(0xFFFF5A5A), null),
-      ('ab_sat', '🛰️', Color(0xFF3DD7FF), null),
-      ('ab_alien', '👽', Color(0xFF3DE08A), null),
+      ('ab_planet', '🪐', Color(0xFFFFB13D), '$_ab/planet.png'),
+      ('ab_moon', '🌕', Color(0xFFBFC6E0), '$_ab/moon.png'),
+      ('ab_mars', '🔴', Color(0xFFFF5A5A), '$_ab/mars.png'),
+      ('ab_sat', '🛰️', Color(0xFF3DD7FF), '$_ab/satellite.png'),
+      ('ab_alien', '👽', Color(0xFF3DE08A), '$_ab/alien.png'),
     ],
     wildGlyph: '💎',
     wildColor: AppColors.teal,
+    wildAsset: '$_ab/wild.png',
     scatterGlyph: '☄️',
     scatterColor: Color(0xFFFF6A3D),
+    scatterAsset: '$_ab/scatter.png',
   ),
 );
