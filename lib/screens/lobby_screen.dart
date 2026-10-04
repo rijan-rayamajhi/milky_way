@@ -14,6 +14,7 @@ import '../games/cosmic_fortune_config.dart';
 import '../games/ways_configs.dart';
 import '../games/hold_win_screen.dart';
 import '../widgets/game_bottom_nav_bar.dart';
+import '../widgets/game_toast.dart';
 
 class LobbyScreen extends StatefulWidget {
   final WalletService wallet;
@@ -74,8 +75,12 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
   Future<void> _openGame(SlotGame g) async {
     if (!g.unlockedAt(widget.wallet.level)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Reach Level ${g.unlockLevel} to unlock ${g.name}')),
+      GameToast.show(
+        context,
+        title: 'LOCKED GAME',
+        message: 'Reach Level ${g.unlockLevel} to unlock ${g.name}',
+        icon: Icons.lock_rounded,
+        accentColor: AppColors.teal,
       );
       return;
     }
@@ -111,8 +116,11 @@ class _LobbyScreenState extends State<LobbyScreen> {
   void _claimHourly() {
     if (eng.claimHourly(widget.wallet)) {
       sound.win();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('🪙 +1,000 free coins claimed!')),
+      GameToast.show(
+        context,
+        title: 'HOURLY BONUS',
+        message: '+1,000 Coins claimed!',
+        assetIcon: 'assets/images/currency/coin.png',
       );
     }
   }
@@ -162,12 +170,13 @@ class _LobbyScreenState extends State<LobbyScreen> {
   // -------------------------------------------------------------
   Widget _lobbyView() {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 110),
       children: [
         Center(
-          child: Image.asset('assets/images/branding/logo.png', height: 92),
+          child: Image.asset('assets/images/branding/logo.png', height: 86),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         _featuredBanner(),
         const SizedBox(height: 16),
         _dailyButton(),
@@ -179,59 +188,210 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
   Widget _featuredBanner() {
     final g = kGames[_featured];
-    return AspectRatio(
-      aspectRatio: 1080 / 480,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: 165,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF26104F),
+                Color(0xFF13062B),
+                Color(0xFF080216),
+              ],
+            ),
+            border: Border.all(
+              color: AppColors.gold.withValues(alpha: 0.75),
+              width: 1.5,
+            ),
+            boxShadow: const [
+              // 2.5D Solid Isometric Base Ledge
+              BoxShadow(
+                color: Color(0xFF070014),
+                offset: Offset(0, 5),
+                blurRadius: 0,
+              ),
+              // Soft cast drop shadow
+              BoxShadow(
+                color: Colors.black54,
+                offset: Offset(0, 7),
+                blurRadius: 6,
+              ),
+              // Ambient Neon Glow
+              BoxShadow(
+                color: Color(0x33FFD700),
+                offset: Offset(0, 2),
+                blurRadius: 14,
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20.5),
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 400),
-                    child: Image.asset(g.asset,
-                        key: ValueKey(g.id), fit: BoxFit.contain),
+                // Radial Aura Behind Featured Art
+                Positioned(
+                  left: 10,
+                  top: 10,
+                  bottom: 10,
+                  width: 140,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          g.glow.withValues(alpha: 0.4),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+
+                // Content Row
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  child: Row(
                     children: [
-                      Text('FEATURED',
-                          style: TextStyle(
-                              color: AppColors.teal,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 11,
-                              letterSpacing: 2)),
-                      Text(g.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 18)),
-                      const SizedBox(height: 10),
-                      CosmicButton(
-                        label: 'PLAY',
-                        icon: Icons.play_arrow_rounded,
-                        height: 42,
-                        onTap: () => _openGame(g),
+                      // Featured Game Illustration
+                      Expanded(
+                        flex: 11,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 350),
+                          child: Image.asset(
+                            g.asset,
+                            key: ValueKey(g.id),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Featured Information & Action
+                      Expanded(
+                        flex: 13,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF00E5FF), Color(0xFF0077B6)],
+                                ),
+                                borderRadius: BorderRadius.circular(5),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0xFF0A0018),
+                                    offset: Offset(0, 1.5),
+                                    blurRadius: 0,
+                                  ),
+                                ],
+                              ),
+                              child: const Text(
+                                '★ SPOTLIGHT GAME',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 9,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              g.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 18,
+                                letterSpacing: 0.3,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black,
+                                    offset: Offset(0, 1.5),
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              g.tagline,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFFD3C5EE),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            CosmicButton(
+                              label: 'PLAY NOW',
+                              icon: Icons.play_arrow_rounded,
+                              height: 38,
+                              onTap: () => _openGame(g),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
+                  ),
+                ),
+
+                // Ornate Gilded Outer Trim
+                IgnorePointer(
+                  child: Image.asset(
+                    'assets/images/lobby/featured_frame.png',
+                    fit: BoxFit.fill,
                   ),
                 ),
               ],
             ),
           ),
-          IgnorePointer(
-            child: Image.asset('assets/images/lobby/featured_frame.png',
-                fit: BoxFit.fill),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 6),
+        // 2.5D Carousel Dot Selector
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(kGames.length, (i) {
+            final active = _featured == i;
+            return GestureDetector(
+              onTap: () {
+                sound.tap();
+                setState(() => _featured = i);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: active ? 18 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(3),
+                  gradient: active ? AppColors.goldGradient : null,
+                  color: active ? null : const Color(0xFF38235A),
+                  boxShadow: active
+                      ? const [
+                          BoxShadow(
+                            color: Color(0x66FFB300),
+                            offset: Offset(0, 1),
+                            blurRadius: 3,
+                          ),
+                        ]
+                      : null,
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 
@@ -240,39 +400,17 @@ class _LobbyScreenState extends State<LobbyScreen> {
       listenable: eng,
       builder: (context, _) => Row(
         children: [
-          GestureDetector(
-            onTap: _openDaily,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Image.asset('assets/images/engagement/daily_wheel.png', width: 56),
-                if (eng.canClaimDaily)
-                  const Positioned(right: -2, top: -2, child: _ReadyDot()),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
           Expanded(
-            flex: 3,
-            child: CosmicButton(
-              label: 'DAILY BONUS',
-              icon: Icons.card_giftcard,
-              gradient: const LinearGradient(
-                  colors: [AppColors.magenta, AppColors.purple]),
+            child: _DailyWheelConsole(
+              canClaim: eng.canClaimDaily,
               onTap: _openDaily,
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            flex: 2,
-            child: CosmicButton(
-              label: eng.canClaimHourly
-                  ? 'FREE'
-                  : _fmtDuration(eng.hourlyRemaining),
-              icon: eng.canClaimHourly ? Icons.add_circle : Icons.timer,
-              height: 54,
-              gradient: const LinearGradient(
-                  colors: [AppColors.teal, AppColors.purple]),
+            child: _HourlyVaultConsole(
+              canClaim: eng.canClaimHourly,
+              remaining: eng.hourlyRemaining,
               onTap: eng.canClaimHourly ? _claimHourly : null,
             ),
           ),
@@ -296,9 +434,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
         itemCount: kGames.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 14,
+          crossAxisSpacing: 12,
           mainAxisSpacing: 14,
-          childAspectRatio: 0.82,
+          childAspectRatio: 0.80,
         ),
         itemBuilder: (context, i) {
           final g = kGames[i];
@@ -1316,18 +1454,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
   }
 
   void _notify(String msg) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg, style: const TextStyle(fontWeight: FontWeight.w700)),
-        backgroundColor: AppColors.deepPurple,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.gold, width: 1),
-        ),
-      ),
-    );
+    GameToast.show(context, message: msg);
   }
 
   Widget _bottomNav() {
@@ -1387,15 +1514,483 @@ class _ReadyDot extends StatelessWidget {
   const _ReadyDot();
   @override
   Widget build(BuildContext context) => Container(
-        width: 14,
-        height: 14,
+        width: 13,
+        height: 13,
         decoration: BoxDecoration(
           color: AppColors.magenta,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(color: Colors.white, width: 1.8),
           boxShadow: [
-            BoxShadow(color: AppColors.magenta.withValues(alpha: 0.8), blurRadius: 6),
+            BoxShadow(
+              color: AppColors.magenta.withValues(alpha: 0.8),
+              blurRadius: 6,
+            ),
           ],
         ),
       );
 }
+
+/// 2.5D Daily Lucky Wheel Console matching the console bottom dock aesthetic.
+class _DailyWheelConsole extends StatefulWidget {
+  final bool canClaim;
+  final VoidCallback onTap;
+
+  const _DailyWheelConsole({
+    required this.canClaim,
+    required this.onTap,
+  });
+
+  @override
+  State<_DailyWheelConsole> createState() => _DailyWheelConsoleState();
+}
+
+class _DailyWheelConsoleState extends State<_DailyWheelConsole> {
+  bool _down = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final canClaim = widget.canClaim;
+    final double translateY = _down ? 2.5 : 0.0;
+    final double extrusionHeight = _down ? 1.5 : 4.0;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) {
+        sound.tap();
+        setState(() => _down = true);
+      },
+      onTapUp: (_) {
+        setState(() => _down = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _down = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0, translateY, 0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: canClaim
+                ? const [
+                    Color(0xFF38104D),
+                    Color(0xFF200732),
+                    Color(0xFF0F021B),
+                  ]
+                : const [
+                    Color(0xFF220F31),
+                    Color(0xFF14061F),
+                    Color(0xFF0B0311),
+                  ],
+          ),
+          border: Border.all(
+            color: canClaim
+                ? AppColors.magenta.withValues(alpha: _down ? 0.95 : 0.75)
+                : const Color(0xFF6A4480).withValues(alpha: 0.4),
+            width: 1.3,
+          ),
+          boxShadow: [
+            // 2.5D Solid Isometric Base Ledge
+            BoxShadow(
+              color: const Color(0xFF070014),
+              offset: Offset(0, extrusionHeight),
+              blurRadius: 0,
+            ),
+            // Soft cast shadow
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.45),
+              offset: Offset(0, extrusionHeight + 2),
+              blurRadius: 4,
+            ),
+            // Ambient Neon Glow
+            if (canClaim && !_down)
+              BoxShadow(
+                color: AppColors.magenta.withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: Offset(0, extrusionHeight),
+              ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            children: [
+              // Wheel Medallion Stage
+              Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const RadialGradient(
+                        colors: [
+                          Color(0xFF3D165E),
+                          Color(0xFF18052A),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: canClaim
+                            ? AppColors.gold
+                            : const Color(0xFF8860B0).withValues(alpha: 0.5),
+                        width: 1.3,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xFF0A0018),
+                          offset: Offset(0, 1.5),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(2.5),
+                    child: Image.asset(
+                      'assets/images/engagement/daily_wheel.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  if (canClaim)
+                    const Positioned(
+                      top: -2,
+                      right: -2,
+                      child: _ReadyDot(),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              // Content Column
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'LUCKY WHEEL',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: canClaim ? AppColors.gold : Colors.white70,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11.5,
+                        letterSpacing: 0.3,
+                        shadows: const [
+                          Shadow(
+                            color: Colors.black,
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      canClaim ? 'Daily Free Spin' : 'Collected Today',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: canClaim ? const Color(0xFFE5CEFC) : Colors.white38,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 9.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Action Pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: canClaim ? AppColors.goldGradient : null,
+                        color: canClaim ? null : const Color(0xFF190924),
+                        borderRadius: BorderRadius.circular(4),
+                        border: canClaim
+                            ? null
+                            : Border.all(color: Colors.white12, width: 0.8),
+                        boxShadow: canClaim
+                            ? const [
+                                BoxShadow(
+                                  color: Color(0xFF261200),
+                                  offset: Offset(0, 1),
+                                  blurRadius: 0,
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Text(
+                        canClaim ? 'SPIN NOW ▶' : 'DONE',
+                        style: TextStyle(
+                          color: canClaim ? AppColors.navy : Colors.white38,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 8.5,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 2.5D Hourly Vault Console matching the console bottom dock aesthetic.
+class _HourlyVaultConsole extends StatefulWidget {
+  final bool canClaim;
+  final Duration remaining;
+  final VoidCallback? onTap;
+
+  const _HourlyVaultConsole({
+    required this.canClaim,
+    required this.remaining,
+    required this.onTap,
+  });
+
+  @override
+  State<_HourlyVaultConsole> createState() => _HourlyVaultConsoleState();
+}
+
+class _HourlyVaultConsoleState extends State<_HourlyVaultConsole> {
+  bool _down = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final canClaim = widget.canClaim;
+    final enabled = widget.onTap != null;
+    final double translateY = _down ? 2.5 : 0.0;
+    final double extrusionHeight = _down ? 1.5 : 4.0;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: enabled
+          ? (_) {
+              sound.tap();
+              setState(() => _down = true);
+            }
+          : null,
+      onTapUp: enabled
+          ? (_) {
+              setState(() => _down = false);
+              widget.onTap!();
+            }
+          : null,
+      onTapCancel: enabled ? () => setState(() => _down = false) : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0, translateY, 0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: canClaim
+                ? const [
+                    Color(0xFF0C3834),
+                    Color(0xFF072422),
+                    Color(0xFF031211),
+                  ]
+                : const [
+                    Color(0xFF09211E),
+                    Color(0xFF051513),
+                    Color(0xFF020B0A),
+                  ],
+          ),
+          border: Border.all(
+            color: canClaim
+                ? AppColors.teal.withValues(alpha: _down ? 0.95 : 0.75)
+                : const Color(0xFF265A54).withValues(alpha: 0.4),
+            width: 1.3,
+          ),
+          boxShadow: [
+            // 2.5D Solid Isometric Base Ledge
+            BoxShadow(
+              color: const Color(0xFF070014),
+              offset: Offset(0, extrusionHeight),
+              blurRadius: 0,
+            ),
+            // Soft cast shadow
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.45),
+              offset: Offset(0, extrusionHeight + 2),
+              blurRadius: 4,
+            ),
+            // Ambient Neon Glow
+            if (canClaim && !_down)
+              BoxShadow(
+                color: AppColors.teal.withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: Offset(0, extrusionHeight),
+              ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            children: [
+              // Chest Medallion Stage
+              Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const RadialGradient(
+                        colors: [
+                          Color(0xFF0C4D46),
+                          Color(0xFF041E1C),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: canClaim
+                            ? const Color(0xFF4DFBD0)
+                            : const Color(0xFF266E64).withValues(alpha: 0.5),
+                        width: 1.3,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xFF02100E),
+                          offset: Offset(0, 1.5),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(3.5),
+                    child: Image.asset(
+                      'assets/images/engagement/reward_chest.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  if (canClaim)
+                    Positioned(
+                      top: -2,
+                      right: -2,
+                      child: Container(
+                        width: 13,
+                        height: 13,
+                        decoration: BoxDecoration(
+                          color: AppColors.teal,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.teal.withValues(alpha: 0.8),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              // Content Column
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'HOURLY VAULT',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: canClaim ? const Color(0xFF64FFDA) : Colors.white70,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11.0,
+                        letterSpacing: 0.1,
+                        shadows: const [
+                          Shadow(
+                            color: Colors.black,
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      canClaim ? '+1,000 Coins' : 'Next Free Drop',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: canClaim ? const Color(0xFFB2DFDB) : Colors.white38,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 9.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Action Pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: canClaim
+                            ? const LinearGradient(
+                                colors: [Color(0xFF00E5FF), Color(0xFF00B4D8)],
+                              )
+                            : null,
+                        color: canClaim ? null : const Color(0xFF061816),
+                        borderRadius: BorderRadius.circular(4),
+                        border: canClaim
+                            ? null
+                            : Border.all(color: Colors.white12, width: 0.8),
+                        boxShadow: canClaim
+                            ? const [
+                                BoxShadow(
+                                  color: Color(0xFF002229),
+                                  offset: Offset(0, 1),
+                                  blurRadius: 0,
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: canClaim
+                          ? const Text(
+                              'CLAIM ▶',
+                              style: TextStyle(
+                                color: AppColors.navy,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 8.5,
+                                letterSpacing: 0.3,
+                              ),
+                            )
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.timer_outlined,
+                                  size: 9,
+                                  color: AppColors.gold,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  _LobbyScreenState._fmtDuration(widget.remaining),
+                                  style: const TextStyle(
+                                    color: AppColors.gold,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 8.5,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

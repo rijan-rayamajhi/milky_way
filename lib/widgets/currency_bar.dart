@@ -42,29 +42,63 @@ class CurrencyBar extends StatelessWidget {
               Positioned(
                 bottom: -4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1.5),
                   decoration: BoxDecoration(
                     gradient: AppColors.goldGradient,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.navy, width: 1.5),
+                    border: Border.all(color: const Color(0xFF2A1502), width: 1.5),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0xFF0A0216),
+                        offset: Offset(0, 2),
+                        blurRadius: 0,
+                      ),
+                    ],
                   ),
                   child: Text('Lv ${wallet.level}',
                       style: const TextStyle(
                           color: AppColors.navy,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w900,
                           fontSize: 11)),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: wallet.levelProgress,
-              minHeight: 5,
-              backgroundColor: Colors.white24,
-              valueColor: const AlwaysStoppedAnimation(AppColors.teal),
+          Container(
+            height: 7,
+            padding: const EdgeInsets.all(1),
+            decoration: BoxDecoration(
+              color: const Color(0xFF090216),
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(
+                color: AppColors.gold.withValues(alpha: 0.45),
+                width: 0.8,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black54,
+                  offset: Offset(0, 1),
+                  blurRadius: 1,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Stack(
+                children: [
+                  FractionallySizedBox(
+                    widthFactor: wallet.levelProgress.clamp(0.02, 1.0),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.teal, Color(0xFF4DFBD0), AppColors.teal],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -78,21 +112,55 @@ class CurrencyBar extends StatelessWidget {
         height: 40,
         padding: const EdgeInsets.only(left: 6, right: 4),
         decoration: BoxDecoration(
-          color: AppColors.navy.withValues(alpha: 0.65),
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1D1138),
+              Color(0xFF0F0624),
+            ],
+          ),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.gold.withValues(alpha: 0.5)),
+          border: Border.all(
+            color: AppColors.gold.withValues(alpha: 0.65),
+            width: 1.2,
+          ),
+          boxShadow: const [
+            // 2.5D solid drop extrusion
+            BoxShadow(
+              color: Color(0xFF060012),
+              offset: Offset(0, 3),
+              blurRadius: 0,
+            ),
+            // Soft glow
+            BoxShadow(
+              color: Color(0x33FFD700),
+              offset: Offset(0, 1),
+              blurRadius: 6,
+            ),
+          ],
         ),
         child: Row(
           children: [
             Image.asset(icon, width: 26, height: 26),
             const SizedBox(width: 6),
             Expanded(
-              child: Text(value,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14)),
+              child: Text(
+                value,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black87,
+                      offset: Offset(0, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
             ),
             if (onAdd != null) _TactileAddButton(onTap: onAdd),
           ],
