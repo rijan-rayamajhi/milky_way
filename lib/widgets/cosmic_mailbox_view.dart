@@ -721,12 +721,16 @@ class _CosmicMailboxViewState extends State<CosmicMailboxView>
                     Image.asset('assets/images/currency/coin.png',
                         width: 15, height: 15),
                     const SizedBox(width: 4),
-                    Text(
-                      '+${CurrencyBar.format(g.coins)} Coins',
-                      style: const TextStyle(
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12.5,
+                    Flexible(
+                      child: Text(
+                        '+${CurrencyBar.format(g.coins)} Coins',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.gold,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12.5,
+                        ),
                       ),
                     ),
                     if (g.gems > 0) ...[
@@ -734,12 +738,16 @@ class _CosmicMailboxViewState extends State<CosmicMailboxView>
                       Image.asset('assets/images/currency/gem.png',
                           width: 13, height: 13),
                       const SizedBox(width: 3),
-                      Text(
-                        '+${g.gems} Gems',
-                        style: const TextStyle(
-                          color: AppColors.teal,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12,
+                      Flexible(
+                        child: Text(
+                          '+${g.gems} Gems',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.teal,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ],
