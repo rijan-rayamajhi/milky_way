@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../services/real_play_service.dart';
 import '../theme/app_theme.dart';
 import 'currency_bar.dart';
 
@@ -56,9 +57,9 @@ class _WinCelebrationState extends State<_WinCelebration>
       };
 
   Duration get _hold => switch (widget.tier) {
-        WinTier.epic => const Duration(milliseconds: 3400),
-        WinTier.mega => const Duration(milliseconds: 2800),
-        _ => const Duration(milliseconds: 2200),
+        WinTier.epic => const Duration(milliseconds: 4600),
+        WinTier.mega => const Duration(milliseconds: 4000),
+        _ => const Duration(milliseconds: 3600),
       };
 
   @override
@@ -68,7 +69,7 @@ class _WinCelebrationState extends State<_WinCelebration>
         vsync: this, duration: const Duration(milliseconds: 500))
       ..forward();
     _rain = AnimationController(vsync: this, duration: _hold)..forward();
-    Future.delayed(_hold, _close);
+    // No auto-dismiss — the player taps to continue (see GestureDetector below).
   }
 
   void _close() {
@@ -97,7 +98,7 @@ class _WinCelebrationState extends State<_WinCelebration>
       child: FadeTransition(
         opacity: _in,
         child: Material(
-          color: Colors.black.withValues(alpha: 0.62),
+          color: Colors.black.withValues(alpha: 0.72),
           child: Stack(
             children: [
               _CoinRain(controller: _rain, count: coins),
@@ -129,6 +130,119 @@ class _WinCelebrationState extends State<_WinCelebration>
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
                           shadows: [Shadow(color: AppColors.gold, blurRadius: 16)],
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      // Real Money Jackpot Upsell Banner
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          RealPlayService.openRealPlay();
+                          _close();
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 32),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF381503), Color(0xFF1E0800)],
+                            ),
+                            border: Border.all(
+                              color: const Color(0xFFFFB300),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFF8F00).withValues(alpha: 0.5),
+                                blurRadius: 16,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.workspace_premium_rounded,
+                                color: Color(0xFFFFD54F),
+                                size: 26,
+                              ),
+                              const SizedBox(width: 10),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'WIN REAL CASH JACKPOTS!',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Color(0xFFFFD54F),
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 12,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      '100% Match Bonus on SpinnerLog',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFFFB300), Color(0xFFFF6F00)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'PLAY REAL',
+                                      style: TextStyle(
+                                        color: Color(0xFF1F0800),
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 10.5,
+                                        letterSpacing: 0.4,
+                                      ),
+                                    ),
+                                    SizedBox(width: 3),
+                                    Icon(
+                                      Icons.open_in_new_rounded,
+                                      color: Color(0xFF1F0800),
+                                      size: 13,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'TAP TO CONTINUE',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                          letterSpacing: 1.5,
                         ),
                       ),
                     ],

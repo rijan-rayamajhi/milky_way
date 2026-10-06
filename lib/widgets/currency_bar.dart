@@ -3,6 +3,8 @@ import '../services/sound_service.dart';
 import '../services/wallet_service.dart';
 import '../theme/app_theme.dart';
 
+import 'coin_fly_overlay.dart';
+
 /// Top lobby bar: avatar + level + XP, and coin/gem balances with a + button.
 class CurrencyBar extends StatelessWidget {
   final WalletService wallet;
@@ -18,10 +20,18 @@ class CurrencyBar extends StatelessWidget {
         children: [
           _avatar(),
           const SizedBox(width: 8),
-          _balance('assets/images/currency/coin.png', _fmt(wallet.coins),
-              onAdd: onGetCoins),
+          _balance(
+            'assets/images/currency/coin.png',
+            wallet.coins,
+            CurrencyGainType.coin,
+            onAdd: onGetCoins,
+          ),
           const SizedBox(width: 8),
-          _balance('assets/images/currency/gem.png', _fmt(wallet.gems)),
+          _balance(
+            'assets/images/currency/gem.png',
+            wallet.gems,
+            CurrencyGainType.gem,
+          ),
         ],
       ),
     );
@@ -106,7 +116,12 @@ class CurrencyBar extends StatelessWidget {
     );
   }
 
-  Widget _balance(String icon, String value, {VoidCallback? onAdd}) {
+  Widget _balance(
+    String icon,
+    int value,
+    CurrencyGainType gainType, {
+    VoidCallback? onAdd,
+  }) {
     return Expanded(
       child: Container(
         height: 40,
@@ -122,20 +137,25 @@ class CurrencyBar extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppColors.gold.withValues(alpha: 0.65),
+            color: gainType == CurrencyGainType.coin
+                ? AppColors.gold.withValues(alpha: 0.65)
+                : AppColors.teal.withValues(alpha: 0.65),
             width: 1.2,
           ),
-          boxShadow: const [
+          boxShadow: [
             // 2.5D solid drop extrusion
-            BoxShadow(
+            const BoxShadow(
               color: Color(0xFF060012),
               offset: Offset(0, 3),
               blurRadius: 0,
             ),
             // Soft glow
             BoxShadow(
-              color: Color(0x33FFD700),
-              offset: Offset(0, 1),
+              color: (gainType == CurrencyGainType.coin
+                      ? AppColors.gold
+                      : AppColors.teal)
+                  .withValues(alpha: 0.25),
+              offset: const Offset(0, 1),
               blurRadius: 6,
             ),
           ],
@@ -145,9 +165,10 @@ class CurrencyBar extends StatelessWidget {
             Image.asset(icon, width: 26, height: 26),
             const SizedBox(width: 6),
             Expanded(
-              child: Text(
-                value,
-                overflow: TextOverflow.ellipsis,
+              child: RollingNumberText(
+                value: value,
+                gainType: gainType,
+                formatter: format,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
@@ -168,8 +189,6 @@ class CurrencyBar extends StatelessWidget {
       ),
     );
   }
-
-  static String _fmt(int n) => format(n);
 
   /// Public number formatter reused across slot screens.
   static String format(int n) {

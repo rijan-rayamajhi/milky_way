@@ -204,3 +204,17 @@ class SlotEngine {
     }
   }
 }
+
+/// Total-bet levels available at [balance]. Every level is a multiple of 50,
+/// and the max bet is ~[pct] of the player's balance (snapped down to a
+/// multiple of 50) — so betting scales with wealth instead of a flat cap.
+/// Always returns at least one level (50).
+List<int> betLevelsForBalance(int balance, {double pct = 0.10}) {
+  const steps = [
+    50, 100, 150, 200, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000,
+    100000, 250000, 500000, 1000000, 2500000, 5000000,
+  ];
+  final maxBet = ((balance * pct) ~/ 50) * 50;
+  final levels = [for (final b in steps) if (b <= maxBet) b];
+  return levels.isEmpty ? const [50] : levels;
+}

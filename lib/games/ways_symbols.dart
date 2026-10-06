@@ -17,14 +17,17 @@ List<SlotSymbol> buildSymbols({
   required Color scatterColor,
   String? wildAsset,
   String? scatterAsset,
+  double payScale = 1.0, // multiplies every payout to tune RTP
 }) {
   assert(highs.length == 5);
-  const highPays = <Map<int, int>>[
-    {3: 8, 4: 20, 5: 50},
-    {3: 6, 4: 15, 5: 40},
-    {3: 5, 4: 12, 5: 30},
-    {3: 4, 4: 10, 5: 25},
-    {3: 3, 4: 8, 5: 20},
+  Map<int, int> s(Map<int, int> p) =>
+      {for (final e in p.entries) e.key: (e.value * payScale).round().clamp(1, 1 << 30)};
+  final highPays = <Map<int, int>>[
+    s({3: 8, 4: 20, 5: 50}),
+    s({3: 6, 4: 15, 5: 40}),
+    s({3: 5, 4: 12, 5: 30}),
+    s({3: 4, 4: 10, 5: 25}),
+    s({3: 3, 4: 8, 5: 20}),
   ];
   const highWeights = [5, 6, 8, 10, 12];
 
@@ -39,15 +42,15 @@ List<SlotSymbol> buildSymbols({
         pays: highPays[i],
       ),
     SlotSymbol(
-        id: 'A', glyph: 'A', asset: '$_roy/a.png', color: const Color(0xFFFF7BD5), weight: 14, pays: {3: 2, 4: 5, 5: 15}),
+        id: 'A', glyph: 'A', asset: '$_roy/a.png', color: const Color(0xFFFF7BD5), weight: 14, pays: s({3: 2, 4: 5, 5: 15})),
     SlotSymbol(
-        id: 'K', glyph: 'K', asset: '$_roy/k.png', color: const Color(0xFF7BC4FF), weight: 16, pays: {3: 2, 4: 5, 5: 12}),
+        id: 'K', glyph: 'K', asset: '$_roy/k.png', color: const Color(0xFF7BC4FF), weight: 16, pays: s({3: 2, 4: 5, 5: 12})),
     SlotSymbol(
-        id: 'Q', glyph: 'Q', asset: '$_roy/q.png', color: const Color(0xFF8CF0C0), weight: 16, pays: {3: 1, 4: 4, 5: 10}),
+        id: 'Q', glyph: 'Q', asset: '$_roy/q.png', color: const Color(0xFF8CF0C0), weight: 16, pays: s({3: 1, 4: 4, 5: 10})),
     SlotSymbol(
-        id: 'J', glyph: 'J', asset: '$_roy/j.png', color: const Color(0xFFC9B8FF), weight: 20, pays: {3: 1, 4: 3, 5: 8}),
+        id: 'J', glyph: 'J', asset: '$_roy/j.png', color: const Color(0xFFC9B8FF), weight: 20, pays: s({3: 1, 4: 3, 5: 8})),
     SlotSymbol(
-        id: '10', glyph: '10', asset: '$_roy/ten.png', color: const Color(0xFFBFC6E0), weight: 20, pays: {3: 1, 4: 3, 5: 8}),
+        id: '10', glyph: '10', asset: '$_roy/ten.png', color: const Color(0xFFBFC6E0), weight: 20, pays: s({3: 1, 4: 3, 5: 8})),
     SlotSymbol(
         id: 'wild',
         glyph: wildGlyph,
@@ -55,7 +58,7 @@ List<SlotSymbol> buildSymbols({
         color: wildColor,
         weight: 3,
         isWild: true,
-        pays: {3: 10, 4: 30, 5: 100}),
+        pays: s({3: 10, 4: 30, 5: 100})),
     SlotSymbol(
         id: 'scatter',
         glyph: scatterGlyph,

@@ -8,6 +8,7 @@ class SlotGame {
   final String name;
   final String tagline;
   final String asset;
+  final String background;
   final Color glow;
   final int unlockLevel; // 1 = available from the start
   final String? badge; // "HOT" / "NEW" / null
@@ -17,6 +18,7 @@ class SlotGame {
     required this.name,
     required this.tagline,
     required this.asset,
+    required this.background,
     required this.glow,
     this.unlockLevel = 1,
     this.badge,
@@ -31,6 +33,7 @@ const kGames = <SlotGame>[
     name: 'Cosmic Fortune',
     tagline: '25 paylines · Free Spins',
     asset: 'assets/images/games/cosmic_fortune.png',
+    background: 'assets/images/games/backgrounds/cosmic_fortune.png',
     glow: AppColors.gold,
     unlockLevel: 1,
     badge: 'HOT',
@@ -40,6 +43,7 @@ const kGames = <SlotGame>[
     name: 'Galaxy Gold',
     tagline: 'Hold & Win · 4 Jackpots',
     asset: 'assets/images/games/galaxy_gold.png',
+    background: 'assets/images/games/backgrounds/galaxy_gold.png',
     glow: AppColors.gold,
     unlockLevel: 3,
     badge: 'NEW',
@@ -49,6 +53,7 @@ const kGames = <SlotGame>[
     name: 'Starburst Nova',
     tagline: 'Expanding Wilds · Both Ways',
     asset: 'assets/images/games/starburst_nova.png',
+    background: 'assets/images/games/backgrounds/starburst_nova.png',
     glow: AppColors.teal,
     unlockLevel: 5,
   ),
@@ -57,6 +62,7 @@ const kGames = <SlotGame>[
     name: 'Lucky Nebula',
     tagline: '243 Ways · Cascades',
     asset: 'assets/images/games/lucky_nebula.png',
+    background: 'assets/images/games/backgrounds/lucky_nebula.png',
     glow: AppColors.magenta,
     unlockLevel: 8,
   ),
@@ -65,6 +71,7 @@ const kGames = <SlotGame>[
     name: 'Asteroid Blitz',
     tagline: '243 Ways · Sticky Multipliers',
     asset: 'assets/images/games/asteroid_blitz.png',
+    background: 'assets/images/games/backgrounds/asteroid_blitz.png',
     glow: Color(0xFFFF6A3D),
     unlockLevel: 12,
   ),
