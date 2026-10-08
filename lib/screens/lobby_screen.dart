@@ -268,10 +268,8 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 setState(() => _featured = i);
               },
               itemBuilder: (context, i) {
-                if (i < kGames.length) {
-                  return _featuredCard(kGames[i]);
-                }
-                return _realPlayFeaturedCard();
+                if (i == 0) return _realPlayFeaturedCard();
+                return _featuredCard(kGames[i - 1]);
               },
             ),
           ),
